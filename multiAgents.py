@@ -44,7 +44,7 @@ class ReflexAgent(Agent):
 
         # Choose one of the best actions
         scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
-        bestScore = max(scores)
+        bestScore = min(scores)
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
         chosenIndex = random.choice(bestIndices) # Pick randomly among the best
 
@@ -70,12 +70,25 @@ class ReflexAgent(Agent):
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
+        oldPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-        "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        def distance(a, b):
+            x1, y1 = a
+            x2, y2 = b
+            return abs(x1 - x2) + abs(y1 - y2)
+
+        closestFood = min(map(lambda food: distance(food, newPos), newFood.asList())) if len(newFood.asList()) != 0 else 0
+        remainingFoodScore = -closestFood -1 if len(currentGameState.getFood().asList()) > len(successorGameState.getFood().asList()) else 0
+        ghostScore = 0
+        for ghost in newGhostStates:
+            if distance(ghost.configuration.pos, newPos) <= 1:
+                ghostScore += 100000
+
+
+        return closestFood + remainingFoodScore + ghostScore
 
 def scoreEvaluationFunction(currentGameState):
     """
