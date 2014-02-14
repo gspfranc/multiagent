@@ -180,12 +180,55 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
       Your minimax agent with alpha-beta pruning (question 3)
     """
 
+    def maxValue(self, gameState, depth, alpha, beta):
+        v = -sys.maxint, None
+        actions = gameState.getLegalActions(0)
+        if depth == self.depth or len(actions) == 0:
+            return self.evaluationFunction(gameState), None
+        depth += 1
+        for action in actions:
+            nv = self.minValue(gameState.generateSuccessor(0, action), depth, alpha, beta)[0], action
+            v = nv if nv[0] > v[0] else v
+            if v[0] > beta:
+                return v
+            alpha = max(alpha, v[0])
+        return v
+
+    def minValue(self, gameState, depth, alpha, beta, agent = 1):
+        v = sys.maxint, None
+        actions = gameState.getLegalActions(agent)
+        if len(actions) == 0:
+            return self.evaluationFunction(gameState), None
+        for action in gameState.getLegalActions(agent):
+            if agent + 1 == gameState.getNumAgents():
+                nv = self.maxValue(gameState.generateSuccessor(agent, action), depth, alpha, beta)[0], action
+            else:
+                nv = self.minValue(gameState.generateSuccessor(agent, action), depth, alpha, beta, agent + 1)[0], action
+            v = nv if nv[0] < v[0] else v
+            if v[0] < alpha:
+                return v
+            beta = min(beta, v[0])
+        return v
+
+
     def getAction(self, gameState):
         """
-          Returns the minimax action using self.depth and self.evaluationFunction
+          Returns the minimax action from the current gameState using self.depth
+          and self.evaluationFunction.
+
+          Here are some method calls that might be useful when implementing minimax.
+
+          gameState.getLegalActions(agentIndex):
+            Returns a list of legal actions for an agent
+            agentIndex=0 means Pacman, ghosts are >= 1
+
+          gameState.generateSuccessor(agentIndex, action):
+            Returns the successor game state after an agent takes an action
+
+          gameState.getNumAgents():
+            Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.maxValue(gameState, 0, -sys.maxint, sys.maxint)[1]
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
