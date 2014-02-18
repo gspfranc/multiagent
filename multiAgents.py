@@ -236,22 +236,18 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       Your expectimax agent (question 4)
     """
 
-    def expectiminimax(self, gamestate, depth, agent):
-        if agent == gamestate.getNumAgents():
-            return self.expectiminimax(gamestate, depth, 0)
-        actions = gamestate.getLegalActions(agent)
-        if not actions or depth == self.depth:
+    def expectimax(self, gamestate, depth, agent):
+        if gamestate.isLose() or gamestate.isWin() or depth == self.depth:
             return self.evaluationFunction(gamestate), None
+
+        actions = gamestate.getLegalActions(agent)
+        cost_action_tuple = [(self.expectimax(gamestate.generateSuccessor(agent, action), depth + 1, (agent + 1) % gamestate.getNumAgents())[0], action) for action in actions]
+        costs = [cost for (cost, action) in cost_action_tuple]
+
         if agent == 0:
-            costAndActionTuple = [(self.expectiminimax(gamestate.generateSuccessor(agent, action), depth + 1, agent + 1)[0], action) for action in actions]
-            costs = [cost for (cost, action) in costAndActionTuple]
-            bestPathIndex = costs.index(max(costs))
-            return costAndActionTuple[bestPathIndex]
-        else:
-            costAndActionTuple = [(self.expectiminimax(gamestate.generateSuccessor(agent, action), depth, agent + 1)[0], action) for action in actions]
-            costs = [cost for (cost, action) in costAndActionTuple]
-            cost = sum(costs) / len(actions)
-            return cost, None
+            best_path = costs.index(max(costs))
+            return cost_action_tuple[best_path]
+        return sum(costs) / len(actions), None
 
 
     def getAction(self, gameState):
@@ -261,7 +257,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        cost, action = self.expectiminimax(gameState, 0, 0)
+        cost, action = self.expectimax(gameState, 0, 0)
         return action
 
 
