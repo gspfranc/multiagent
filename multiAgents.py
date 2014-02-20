@@ -291,6 +291,7 @@ def betterEvaluationFunction(currentGameState):
     pacman = currentGameState.getPacmanPosition()
     food = currentGameState.getFood().asList()
     ghosts = currentGameState.getGhostStates()
+    capsule = currentGameState.getCapsules()
 
     def distance(a, b):
         x1, y1 = a
@@ -306,7 +307,9 @@ def betterEvaluationFunction(currentGameState):
         if distance(ghost.configuration.pos, pacman) <= 1 and ghost.scaredTimer < 3:
             ghost_score -= 1000
 
-    return food_score + ghost_score + random.randint(0, 3)
+    capsule_score = -len(capsule) * 3
+
+    return scoreEvaluationFunction(currentGameState) + food_score + ghost_score + capsule_score + random.randint(0, 3)
 
 # Abbreviation
 better = betterEvaluationFunction
