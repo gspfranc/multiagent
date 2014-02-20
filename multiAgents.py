@@ -1,3 +1,6 @@
+# Tommy Santerre Pelletier - 11 150 960
+# Francis Gravel St-Pierre - 11 140 669
+
 # multiAgents.py
 # --------------
 # Licensing Information:  You are free to use or extend these projects for 
