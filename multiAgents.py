@@ -236,17 +236,26 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       Your expectimax agent (question 4)
     """
 
+    def action_cost(self, agent, action, depth, gamestate):
+        next_state = gamestate.generateSuccessor(agent, action)
+        next_agent = (agent + 1) % gamestate.getNumAgents()
+        cost, action = self.expectimax(next_state, depth + 1, next_agent)
+        return cost
+
     def expectimax(self, gamestate, depth, agent):
         if gamestate.isLose() or gamestate.isWin() or depth == self.depth:
             return self.evaluationFunction(gamestate), None
 
         actions = gamestate.getLegalActions(agent)
-        cost_action_tuple = [(self.expectimax(gamestate.generateSuccessor(agent, action), depth + 1, (agent + 1) % gamestate.getNumAgents())[0], action) for action in actions]
+        cost_action_tuple = [(self.action_cost(agent, action, depth, gamestate), action) for action in actions]
         costs = [cost for (cost, action) in cost_action_tuple]
 
+        # Pacman
         if agent == 0:
             best_path = costs.index(max(costs))
             return cost_action_tuple[best_path]
+
+        # Ghosts
         return sum(costs) / len(actions), None
 
 
@@ -266,7 +275,8 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION: Base score on amount of food left and distance to closest food.
+      Sometime pacman got stuck behind a wall so we added a random factor.
     """
     if currentGameState.isWin():
         return sys.maxint
@@ -283,9 +293,7 @@ def betterEvaluationFunction(currentGameState):
         return abs(x1 - x2) + abs(y1 - y2)
 
     closest_food = min(distance(pacman, x) for x in food)
-    furthest_food = max(distance(pacman, x) for x in food)
     food_count = len(food)
-    avg_food_distance = sum(distance(pacman, x) for x in food) / food_count
     food_score = - closest_food - (food_count * 100)
 
     ghost_score = 0
