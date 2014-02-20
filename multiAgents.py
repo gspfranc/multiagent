@@ -131,10 +131,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
 
     def maxValue(self, gameState, depth):
-        v = -sys.maxint, None
+        v = -sys.maxint, Directions.STOP
         actions = gameState.getLegalActions(0)
         if depth == self.depth or len(actions) == 0:
-            return self.evaluationFunction(gameState), None
+            return self.evaluationFunction(gameState), Directions.STOP
         depth += 1
         for action in actions:
             nv = self.minValue(gameState.generateSuccessor(0, action), depth)[0], action
@@ -142,10 +142,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
         return v
 
     def minValue(self, gameState, depth, agent = 1):
-        v = sys.maxint, None
+        v = sys.maxint, Directions.STOP
         actions = gameState.getLegalActions(agent)
         if len(actions) == 0:
-            return self.evaluationFunction(gameState), None
+            return self.evaluationFunction(gameState), Directions.STOP
         for action in gameState.getLegalActions(agent):
             if agent + 1 == gameState.getNumAgents():
                 nv = self.maxValue(gameState.generateSuccessor(agent, action), depth)[0], action
@@ -328,6 +328,7 @@ class ContestAgent(MultiAgentSearchAgent):
           Ghosts don't behave randomly anymore, but they aren't perfect either -- they'll usually
           just make a beeline straight towards Pacman (or away from him if they're scared!)
         """
-        "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
+        agent = MinimaxAgent(evalFn='betterEvaluationFunction')
+        return agent.getAction(gameState)
 
