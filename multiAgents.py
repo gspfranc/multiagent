@@ -236,29 +236,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       Your expectimax agent (question 4)
     """
 
-    def action_cost(self, agent, action, depth, gamestate):
-        next_state = gamestate.generateSuccessor(agent, action)
-        next_agent = (agent + 1) % gamestate.getNumAgents()
-        cost, action = self.expectimax(next_state, depth + 1, next_agent)
-        return cost
-
-    def expectimax(self, gamestate, depth, agent):
-        if gamestate.isLose() or gamestate.isWin() or depth == self.depth:
-            return self.evaluationFunction(gamestate), None
-
-        actions = gamestate.getLegalActions(agent)
-        cost_action_tuple = [(self.action_cost(agent, action, depth, gamestate), action) for action in actions]
-        costs = [cost for (cost, action) in cost_action_tuple]
-
-        # Pacman
-        if agent == 0:
-            best_path = costs.index(max(costs))
-            return cost_action_tuple[best_path]
-
-        # Ghosts
-        return sum(costs) / len(actions), None
-
-
     def getAction(self, gameState):
         """
           Returns the expectimax action using self.depth and self.evaluationFunction
@@ -266,8 +243,44 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        cost, action = self.expectimax(gameState, 0, 0)
-        return action
+
+        def expectedvalue(gameState, agentindex, depth):
+            if gameState.isWin() or gameState.isLose() or depth == 0:
+                return self.evaluationFunction(gameState)
+            numghosts = gameState.getNumAgents() - 1
+            legalActions = gameState.getLegalActions(agentindex)
+            numactions = len(legalActions)
+            totalvalue = 0
+            for action in legalActions:
+                nextState = gameState.generateSuccessor(agentindex, action)
+                if (agentindex == numghosts):
+                    totalvalue += maxvalue(nextState, depth - 1)
+                else:
+                    totalvalue += expectedvalue(nextState, agentindex + 1, depth)
+            return totalvalue / numactions
+        def maxvalue(gameState, depth):
+            if gameState.isWin() or gameState.isLose() or depth == 0:
+                return self.evaluationFunction(gameState)
+            legalActions = gameState.getLegalActions(0)
+            bestAction = Directions.STOP
+            score = -(float("inf"))
+            for action in legalActions:
+                prevscore = score
+                nextState = gameState.generateSuccessor(0, action)
+                score = max(score, expectedvalue(nextState, 1, depth))
+            return score
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+        legalActions = gameState.getLegalActions(0)
+        bestaction = Directions.STOP
+        score = -(float("inf"))
+        for action in legalActions:
+            nextState = gameState.generateSuccessor(0, action)
+            prevscore = score
+            score = max(score, expectedvalue(nextState, 1, self.depth))
+            if score > prevscore:
+                bestaction = action
+        return bestaction
 
 
 def betterEvaluationFunction(currentGameState):
