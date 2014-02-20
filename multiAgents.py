@@ -245,42 +245,38 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
 
         def expectedvalue(gameState, agentindex, depth):
-            if gameState.isWin() or gameState.isLose() or depth == 0:
+            if gameState.isWin() or gameState.isLose() or depth == self.depth:
                 return self.evaluationFunction(gameState)
             numghosts = gameState.getNumAgents() - 1
-            legalActions = gameState.getLegalActions(agentindex)
-            numactions = len(legalActions)
-            totalvalue = 0
-            for action in legalActions:
-                nextState = gameState.generateSuccessor(agentindex, action)
-                if (agentindex == numghosts):
-                    totalvalue += maxvalue(nextState, depth - 1)
+            actions = gameState.getLegalActions(agentindex)
+            total = 0
+            for action in actions:
+                next_state = gameState.generateSuccessor(agentindex, action)
+                if agentindex == numghosts:
+                    total += maxvalue(next_state, depth + 1)
                 else:
-                    totalvalue += expectedvalue(nextState, agentindex + 1, depth)
-            return totalvalue / numactions
+                    total += expectedvalue(next_state, agentindex + 1, depth)
+            return total / len(actions)
+
         def maxvalue(gameState, depth):
-            if gameState.isWin() or gameState.isLose() or depth == 0:
+            if gameState.isWin() or gameState.isLose() or depth == self.depth:
                 return self.evaluationFunction(gameState)
-            legalActions = gameState.getLegalActions(0)
-            bestAction = Directions.STOP
-            score = -(float("inf"))
-            for action in legalActions:
-                prevscore = score
-                nextState = gameState.generateSuccessor(0, action)
-                score = max(score, expectedvalue(nextState, 1, depth))
+            actions = gameState.getLegalActions(0)
+            score = -sys.maxint
+            for action in actions:
+                next_state = gameState.generateSuccessor(0, action)
+                score = max(score, expectedvalue(next_state, 1, depth))
             return score
-        if gameState.isWin() or gameState.isLose():
-            return self.evaluationFunction(gameState)
-        legalActions = gameState.getLegalActions(0)
-        bestaction = Directions.STOP
-        score = -(float("inf"))
-        for action in legalActions:
-            nextState = gameState.generateSuccessor(0, action)
-            prevscore = score
-            score = max(score, expectedvalue(nextState, 1, self.depth))
-            if score > prevscore:
-                bestaction = action
-        return bestaction
+
+        actions = gameState.getLegalActions(0)
+        score = -sys.maxint
+        for action in actions:
+            next_state = gameState.generateSuccessor(0, action)
+            prev_score = score
+            score = max(score, expectedvalue(next_state, 1, 0))
+            if score > prev_score:
+                best_action = action
+        return best_action
 
 
 def betterEvaluationFunction(currentGameState):
