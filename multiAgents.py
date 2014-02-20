@@ -269,14 +269,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             return score
 
         actions = gameState.getLegalActions(0)
-        score = -sys.maxint
-        for action in actions:
-            next_state = gameState.generateSuccessor(0, action)
-            prev_score = score
-            score = max(score, expectedvalue(next_state, 1, 0))
-            if score > prev_score:
-                best_action = action
-        return best_action
+        next_states = [gameState.generateSuccessor(0, action) for action in actions]
+        scores = [expectedvalue(state, 1, 0) for state in next_states]
+        best_action_index = scores.index(max(scores))
+        return actions[best_action_index]
 
 
 def betterEvaluationFunction(currentGameState):
